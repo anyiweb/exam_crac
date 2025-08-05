@@ -1077,7 +1077,7 @@ function loadCracQuestions() {
                         <div class="crac-file-icon">📁</div>
                         <div class="crac-file-info">
                             <div class="crac-file-name">手动选择文件</div>
-                            <div class="crac-file-desc">如果自动加载失败，请手动选择CRAC题库文件</div>
+                            <div class="crac-file-desc">如果加载失败，请手动选择文件上传</div>
                         </div>
                     </div>
                 </div>

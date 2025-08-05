@@ -456,6 +456,39 @@ body {
     line-height: 1.4;
 }
 
+/* 手动选择文件选项样式 */
+.crac-manual-upload {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.manual-upload-item {
+    border-style: dashed !important;
+    border-color: #999 !important;
+    background: #f9f9f9 !important;
+}
+
+.manual-upload-item:hover {
+    border-color: #28a745 !important;
+    background: linear-gradient(135deg, #f0fff4 0%, #e8f5e8 100%) !important;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.15) !important;
+}
+
+.manual-upload-item .crac-file-icon {
+    color: #28a745;
+}
+
+.manual-upload-item .crac-file-name {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.manual-upload-item .crac-file-desc {
+    color: #666;
+    font-style: italic;
+}
+
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }

@@ -1072,6 +1072,15 @@ function loadCracQuestions() {
                         </div>
                     </div>
                 `).join('')}
+                <div class="crac-manual-upload">
+                    <div class="crac-file-item manual-upload-item">
+                        <div class="crac-file-icon">📁</div>
+                        <div class="crac-file-info">
+                            <div class="crac-file-name">手动选择文件</div>
+                            <div class="crac-file-desc">如果自动加载失败，请手动选择CRAC题库文件</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     `;
@@ -1089,8 +1098,34 @@ function loadCracQuestions() {
         }
     });
     
-    // 文件选择事件
-    modal.querySelectorAll('.crac-file-item').forEach(item => {
+    // 手动文件选择事件
+    modal.querySelector('.manual-upload-item').addEventListener('click', () => {
+        document.body.removeChild(modal);
+        
+        // 创建文件输入元素
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = '.pdf,.doc,.docx';
+        fileInput.style.display = 'none';
+        
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                // 切换到CRAC模式
+                switchMode('crac');
+                
+                // 模拟文件上传事件
+                handleFileUpload({ target: { files: [file] } });
+            }
+            document.body.removeChild(fileInput);
+        });
+        
+        document.body.appendChild(fileInput);
+        fileInput.click();
+    });
+    
+    // 预设文件选择事件
+    modal.querySelectorAll('.crac-file-item:not(.manual-upload-item)').forEach(item => {
         item.addEventListener('click', async () => {
             const filePath = item.dataset.path;
             const fileName = item.dataset.name;
@@ -1100,13 +1135,17 @@ function loadCracQuestions() {
             try {
                 showSuccess('正在加载CRAC题库文件...');
                 
-                // 使用fetch加载文件
+                // 使用fetch加载文件，增加兼容性处理
                 const response = await fetch(filePath);
                 if (!response.ok) {
-                    throw new Error(`文件加载失败: ${response.status}`);
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
                 
                 const arrayBuffer = await response.arrayBuffer();
+                if (arrayBuffer.byteLength === 0) {
+                    throw new Error('文件内容为空');
+                }
+                
                 const file = new File([arrayBuffer], fileName, { type: 'application/pdf' });
                 
                 // 切换到CRAC模式
@@ -1116,8 +1155,35 @@ function loadCracQuestions() {
                 await handlePDFFile(file, fileName, 'pdf');
                 
             } catch (error) {
-                showError(`CRAC题库加载失败: ${error.message}`);
-                console.error('CRAC题库加载错误:', error);
+                console.error('CRAC题库自动加载错误:', error);
+                
+                // 自动加载失败时，提供手动选择选项
+                const fallbackMessage = `自动加载失败: ${error.message}\n\n是否要手动选择文件？`;
+                
+                if (confirm(fallbackMessage)) {
+                    // 创建文件输入元素进行手动选择
+                    const fileInput = document.createElement('input');
+                    fileInput.type = 'file';
+                    fileInput.accept = '.pdf,.doc,.docx';
+                    fileInput.style.display = 'none';
+                    
+                    fileInput.addEventListener('change', (event) => {
+                        const file = event.target.files[0];
+                        if (file) {
+                            // 切换到CRAC模式
+                            switchMode('crac');
+                            
+                            // 模拟文件上传事件
+                            handleFileUpload({ target: { files: [file] } });
+                        }
+                        document.body.removeChild(fileInput);
+                    });
+                    
+                    document.body.appendChild(fileInput);
+                    fileInput.click();
+                } else {
+                    showError(`CRAC题库加载失败: ${error.message}`);
+                }
             }
         });
     });

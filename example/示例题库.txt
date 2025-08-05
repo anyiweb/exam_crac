@@ -1,0 +1,110 @@
+1. 以下哪个是Python的正确语法？
+A. print("Hello World")
+B. print "Hello World"
+C. echo "Hello World"
+D. console.log("Hello World")
+答案：A
+
+2. HTML的全称是什么？
+A. HyperText Markup Language
+B. High Tech Modern Language
+C. Home Tool Markup Language
+D. Hyperlink and Text Markup Language
+答案：A
+
+3. 以下哪个不是JavaScript的数据类型？
+A. string
+B. number
+C. boolean
+D. float
+答案：D
+
+4. 在关系数据库中，主键的作用是什么？
+A. 唯一标识表中的每一行
+B. 提高查询速度
+C. 建立表之间的关系
+D. 存储大量数据
+答案：A
+
+5. 以下哪个HTTP状态码表示"未找到"？
+A. 200
+B. 404
+C. 500
+D. 302
+答案：B
+
+6. 以下哪些是前端开发技术？
+A. HTML
+B. CSS
+C. JavaScript
+D. Python
+答案：ABC
+
+7. 以下哪些是数据库管理系统？
+A. MySQL
+B. PostgreSQL
+C. MongoDB
+D. Redis
+答案：ABCD
+
+8. 以下哪些是版本控制工具？
+A. Git
+B. SVN
+C. Mercurial
+D. Docker
+答案：ABC
+
+9. 以下哪些是Python的内置数据类型？
+A. list
+B. dict
+C. tuple
+D. array
+答案：ABC
+
+10. 以下哪些是常见的网络协议？
+A. HTTP
+B. FTP
+C. SMTP
+D. JSON
+答案：ABC
+
+11. Python是一种解释型编程语言。
+A. 正确
+B. 错误
+答案：A
+
+12. CSS只能用于网页样式设计。
+A. 正确
+B. 错误
+答案：B
+
+13. HTTP是一种安全的网络协议。
+A. 正确
+B. 错误
+答案：B
+
+14. JavaScript是一种编译型语言。
+A. 正确
+B. 错误
+答案：B
+
+15. SQL是用于管理关系数据库的标准语言。
+A. 正确
+B. 错误
+答案：A
+
+16. 在Python中，用于定义函数的关键字是____。
+答案：def
+
+17. HTML文档的根元素是____标签。
+答案：html|HTML
+
+18. CSS的全称是____。
+答案：Cascading Style Sheets|层叠样式表
+
+19. 在JavaScript中，用于声明变量的关键字有____和____。
+答案：var let|let var|var const|const var|let const|const let
+
+20. HTTP协议默认使用的端口号是____。
+答案：80
+

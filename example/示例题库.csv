@@ -1,0 +1,21 @@
+题目,选项A,选项B,选项C,选项D,正确答案
+以下哪个是Python的正确语法？,"print(""Hello World"")","print ""Hello World""","echo ""Hello World""","console.log(""Hello World"")",A
+HTML的全称是什么？,HyperText Markup Language,High Tech Modern Language,Home Tool Markup Language,Hyperlink and Text Markup Language,A
+以下哪个不是JavaScript的数据类型？,string,number,boolean,float,D
+在关系数据库中，主键的作用是什么？,唯一标识表中的每一行,提高查询速度,建立表之间的关系,存储大量数据,A
+"以下哪个HTTP状态码表示""未找到""？",200,404,500,302,B
+以下哪些是前端开发技术？,HTML,CSS,JavaScript,Python,ABC
+以下哪些是数据库管理系统？,MySQL,PostgreSQL,MongoDB,Redis,ABCD
+以下哪些是版本控制工具？,Git,SVN,Mercurial,Docker,ABC
+以下哪些是Python的内置数据类型？,list,dict,tuple,array,ABC
+以下哪些是常见的网络协议？,HTTP,FTP,SMTP,JSON,ABC
+Python是一种解释型编程语言。,正确,错误,,,A
+CSS只能用于网页样式设计。,正确,错误,,,B
+HTTP是一种安全的网络协议。,正确,错误,,,B
+JavaScript是一种编译型语言。,正确,错误,,,B
+SQL是用于管理关系数据库的标准语言。,正确,错误,,,A
+在Python中，用于定义函数的关键字是____。,,,,,def
+HTML文档的根元素是____标签。,,,,,html|HTML
+CSS的全称是____。,,,,,Cascading Style Sheets|层叠样式表
+在JavaScript中，用于声明变量的关键字有____和____。,,,,,var let|let var|var const|const var|let const|const let
+HTTP协议默认使用的端口号是____。,,,,,80

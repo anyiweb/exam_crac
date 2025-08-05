@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模拟CRAC答题系统</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- 引入Mammoth.js库用于Word文档解析 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 智能考试答题系统</h1>
+            <p>支持多种格式题库导入，智能答题与评分</p>
+        </div>
+
+        <div class="main-content">
+            <!-- 导入区域 -->
+            <div class="import-section" id="homeSection">
+                <div class="mode-selector">
+                    <button class="mode-btn active" data-mode="normal">普通模式</button>
+                    <button class="mode-btn" data-mode="crac">CRAC模式</button>
+                    <button class="settings-btn" id="settingsBtn">⚙️ 自定义解析规则</button>
+                </div>
+                
+                <!-- 自定义解析规则设置面板 -->
+                <div class="settings-panel" id="settingsPanel" style="display: none;">
+                    <h3>自定义解析规则设置</h3>
+                    <div class="settings-grid">
+                        <div class="setting-item">
+                            <label>题目标识符：</label>
+                            <input type="text" id="questionMarker" value="[Q]" placeholder="例如：[Q]">
+                            <span class="setting-desc">标识题目内容开始的符号</span>
+                        </div>
+                        <div class="setting-item">
+                            <label>选项标识符：</label>
+                            <input type="text" id="optionMarker" value="[A-F]" placeholder="例如：[A-F]">
+                            <span class="setting-desc">标识选项的符号（支持正则表达式）</span>
+                        </div>
+                        <div class="setting-item">
+                            <label>答案标识符：</label>
+                            <input type="text" id="answerMarker" value="[T]" placeholder="例如：[T]">
+                            <span class="setting-desc">标识正确答案的符号</span>
+                        </div>
+                        <div class="setting-item">
+                            <label>题目分隔符：</label>
+                            <input type="text" id="questionSeparator" value="[J]" placeholder="例如：[J]">
+                            <span class="setting-desc">分隔不同题目的符号</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 题型分数设置 -->
+                    <h3>题型分数设置</h3>
+                    <div class="score-settings-grid">
+                        <div class="score-setting-item">
+                            <label>单选题分数：</label>
+                            <input type="number" id="singleChoiceScore" value="1" min="0" step="0.5">
+                            <span class="setting-desc">每道单选题的分数</span>
+                        </div>
+                        <div class="score-setting-item">
+                            <label>多选题分数：</label>
+                            <input type="number" id="multipleChoiceScore" value="2" min="0" step="0.5">
+                            <span class="setting-desc">每道多选题的分数</span>
+                        </div>
+                        <div class="score-setting-item">
+                            <label>判断题分数：</label>
+                            <input type="number" id="trueFalseScore" value="1" min="0" step="0.5">
+                            <span class="setting-desc">每道判断题的分数</span>
+                        </div>
+                        <div class="score-setting-item">
+                            <label>填空题分数：</label>
+                            <input type="number" id="fillBlankScore" value="2" min="0" step="0.5">
+                            <span class="setting-desc">每道填空题的分数</span>
+                        </div>
+                    </div>
+                    <div class="settings-actions">
+                        <button class="btn-secondary" id="resetSettings">恢复默认</button>
+                        <button class="btn-primary" id="saveSettings">保存设置</button>
+                        <button class="btn-secondary" id="closeSettings">关闭</button>
+                    </div>
+                </div>
+                
+                <div class="file-upload" id="fileUploadArea">
+                    <p class="file-format">支持CSV、XLSX、TXT格式的题库文件</p>
+                    <input type="file" id="fileInput" class="file-input" accept=".csv,.xlsx,.txt">
+                    <button class="upload-btn" id="uploadBtn">选择文件</button>
+                    <button class="sample-btn" id="sampleBtn">加载示例题库</button>
+                    <button class="crac-btn" id="cracBtn">加载CRAC题库</button>
+                    <div class="drag-hint">或将文件拖拽到此区域</div>
+                </div>
+            </div>
+
+            <!-- 答题模式选择区域 -->
+            <div class="mode-selection-area" style="display: none;">
+                <div class="mode-selection-container">
+                    <h2>选择答题模式</h2>
+                    <div class="mode-grid">
+                        <div class="mode-card" data-mode="sequential">
+                            <div class="mode-icon">📝</div>
+                            <h3>顺序答题</h3>
+                            <p>按照题目顺序依次答题</p>
+                        </div>
+                        <div class="mode-card" data-mode="random">
+                            <div class="mode-icon">🔀</div>
+                            <h3>乱序答题</h3>
+                            <p>随机打乱题目顺序答题</p>
+                        </div>
+                        <div class="mode-card" data-mode="study">
+                            <div class="mode-icon">📖</div>
+                            <h3>背题模式</h3>
+                            <p>可查看答案的学习模式</p>
+                        </div>
+                        <div class="mode-card" data-mode="exam">
+                            <div class="mode-icon">🎯</div>
+                            <h3>模拟考试</h3>
+                            <p>按考试标准随机抽题</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 模拟考试配置 -->
+                    <div class="exam-config" id="examConfig" style="display: none;">
+                        <h3>模拟考试配置</h3>
+                        <div class="exam-type-selector">
+                            <div class="exam-type" data-type="A">
+                                <h4>A类验证试卷</h4>
+                                <p>40题 (单选32题 + 多选8题)</p>
+                                <p>时间: 40分钟 | 合格: 30题</p>
+                            </div>
+                            <div class="exam-type" data-type="B">
+                                <h4>B类验证试卷</h4>
+                                <p>60题 (单选45题 + 多选15题)</p>
+                                <p>时间: 60分钟 | 合格: 45题</p>
+                            </div>
+                            <div class="exam-type" data-type="C">
+                                <h4>C类验证试卷</h4>
+                                <p>90题 (单选70题 + 多选20题)</p>
+                                <p>时间: 90分钟 | 合格: 70题</p>
+                            </div>
+                            <div class="exam-type" data-type="custom">
+                                <h4>自定义试卷</h4>
+                                <p>自定义题目数量和时间</p>
+                                <p>可设置个性化考试参数</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 自定义试卷配置 -->
+                        <div class="custom-exam-config" id="customExamConfig" style="display: none;">
+                            <h4>自定义试卷设置</h4>
+                            <div class="custom-config-grid">
+                                <div class="config-item">
+                                    <label for="customQuestionCount">题目数量:</label>
+                                    <input type="number" id="customQuestionCount" min="1" max="200" value="50" />
+                                </div>
+                                <div class="config-item">
+                                    <label for="customTimeLimit">考试时间(分钟):</label>
+                                    <input type="number" id="customTimeLimit" min="1" max="300" value="60" />
+                                </div>
+                                <div class="config-item">
+                                    <label for="customPassScore">合格题数:</label>
+                                    <input type="number" id="customPassScore" min="1" max="200" value="30" />
+                                </div>
+                                <div class="config-item">
+                                    <label for="customPassPercent">合格率(%):</label>
+                                    <input type="number" id="customPassPercent" min="1" max="100" value="60" />
+                                </div>
+                            </div>
+                            <div class="config-note">
+                                <p>💡 提示: 合格题数和合格率会自动同步，修改其中一个会自动计算另一个</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mode-actions">
+                        <button class="btn-secondary" id="backToImportBtn">返回导入</button>
+                        <button class="btn-primary" id="startSelectedModeBtn" disabled>开始答题</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 考试区域 -->
+            <div class="exam-area" id="examSection">
+                <div class="exam-layout">
+                    <div class="question-area">
+                        <div class="question-header">
+                            <div class="question-number" id="questionNumber">第 1 题</div>
+                            <div class="header-controls">
+                                <button class="home-btn" id="homeBtn" style="margin-left: 200px;">🏠 回到主页</button>
+                                <button class="score-toggle-btn" id="scoreToggleBtn">📊 显示得分</button>
+                                <div class="score-display" id="scoreDisplay" style="display: none;">得分: 0/0</div>
+                            </div>
+                        </div>
+                        
+                        <!-- 文件信息显示 -->
+                        <div class="file-info" id="fileInfo" style="display: none;">
+                            <div class="file-info-content">
+                                <p>答题文件来源：</p>
+                                <span class="file-icon">📄</span>
+                                <span class="file-name" id="fileName">未加载文件</span>
+                                <span class="file-extension" id="fileExtension"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="question-content">
+                            <div class="question-text" id="questionText"></div>
+                            <div class="options" id="optionsContainer"></div>
+                        </div>
+                        
+                        <div class="question-controls">
+                            <button class="nav-btn prev-btn" id="prevBtn">上一题</button>
+                            <button class="nav-btn view-answer-btn" id="viewAnswerBtn">查看答案</button>
+                            <button class="nav-btn favorite-btn" id="favoriteBtn">⭐ 收藏</button>
+                            <button class="nav-btn pause-btn" id="pauseBtn" style="display: none;">⏸️ 暂停考试</button>
+                            <button class="nav-btn resume-btn" id="resumeBtn" style="display: none;">▶️ 恢复考试</button>
+                            <button class="nav-btn submit-btn" id="submitBtn" style="display: none;">提交答案</button>
+                            <button class="nav-btn next-btn" id="nextBtn">下一题</button>
+                        </div>
+                    </div>
+                    
+                    <div class="answer-card">
+                        <div class="card-title">答题卡</div>
+                        <div class="current-mode" id="currentMode">当前模式: 未选择</div>
+                        <div id="progressInfo" class="progress-info">进度: 0/0 题</div>
+                        <div class="stats-container">
+                            <div class="stats-column">
+                                <div class="progress-item">
+                                    <span>总题数:</span>
+                                    <span id="totalQuestions">0</span>
+                                </div>
+                                <div class="progress-item">
+                                    <span>已答题:</span>
+                                    <span id="answeredCount">0</span>
+                                </div>
+                                <div class="progress-item">
+                                    <span>未答题:</span>
+                                    <span id="unansweredCount">0</span>
+                                </div>
+                                <div class="progress-item">
+                                    <span>已收藏:</span>
+                                    <span id="favoritedCount">0</span>
+                                </div>
+                            </div>
+                            <div class="stats-column">
+                                <div class="progress-item">
+                                    <span>单选题:</span>
+                                    <span id="singleChoiceCount">0</span>
+                                </div>
+                                <div class="progress-item">
+                                    <span>多选题:</span>
+                                    <span id="multipleChoiceCount">0</span>
+                                </div>
+                                <div class="progress-item">
+                                    <span>判断题:</span>
+                                    <span id="trueFalseCount">0</span>
+                                </div>
+                                <div class="progress-item">
+                                    <span>填空题:</span>
+                                    <span id="fillBlankCount">0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="answer-card-pagination">
+                            <button class="pagination-btn" id="prevPageBtn">‹</button>
+                            <input type="number" id="pageInput" min="1" value="1" class="page-input">
+                            <span class="page-info">/ <span id="totalPages">1</span></span>
+                            <button class="pagination-btn" id="nextPageBtn">›</button>
+                        </div>
+                        <div class="answer-grid" id="answerGrid"></div>
+                        <div class="card-actions">
+                            <button class="reset-btn" id="resetAnswersBtn">🔄 重置答题</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 结果区域 -->
+            <div class="result-section" id="resultsSection">
+                <div class="result-score" id="finalScore">0/0</div>
+                <div class="result-details">
+                    <p>测试完成！</p>
+                    <p>正确题数: <span id="correctCount">0</span></p>
+                    <p>错误题数: <span id="wrongCount">0</span></p>
+                    <p>得分率: <span id="scorePercentage">0%</span></p>
+                </div>
+                <div class="result-actions">
+                    <button class="restart-btn" id="restartBtn">重新开始</button>
+                    <button class="restart-btn" id="reviewBtn">查看答案</button>
+                    <button class="restart-btn" id="wrongQuestionsBtn">📝 错题回看</button>
+                    <button class="restart-btn" id="favoritesBtn">⭐ 收藏题目</button>
+                    <button class="restart-btn new-exam-btn" id="newExamBtn">选择新题库</button>
+                </div>
+                <div id="resultsList" class="results-list"></div>
+            </div>
+
+            <!-- 错题回看界面 -->
+            <div class="wrong-questions-section" id="wrongQuestionsSection" style="display: none;">
+                <div class="section-header">
+                    <h2>📝 错题回看</h2>
+                    <div class="header-actions">
+                        <button class="nav-btn" id="exportWrongQuestionsBtn">💾 导出错题</button>
+                        <button class="nav-btn" id="clearWrongQuestionsBtn">🗑️ 清空错题</button>
+                        <button class="nav-btn" id="backFromWrongBtn">← 返回</button>
+                    </div>
+                </div>
+                <div class="wrong-questions-stats">
+                    <div class="stats-item">
+                        <span class="stats-label">错题总数:</span>
+                        <span class="stats-value" id="wrongQuestionsCount">0</span>
+                    </div>
+                    <div class="stats-item">
+                        <span class="stats-label">来源文件:</span>
+                        <span class="stats-value" id="wrongQuestionsSource">-</span>
+                    </div>
+                </div>
+                <div id="wrongQuestionsList" class="questions-list"></div>
+            </div>
+
+            <!-- 收藏题目界面 -->
+            <div class="favorites-section" id="favoritesSection" style="display: none;">
+                <div class="section-header">
+                    <h2>⭐ 收藏题目</h2>
+                    <div class="header-actions">
+                        <button class="nav-btn" id="exportFavoritesBtn">💾 导出收藏</button>
+                        <button class="nav-btn" id="clearFavoritesBtn">🗑️ 清空收藏</button>
+                        <button class="nav-btn" id="backFromFavoritesBtn">← 返回</button>
+                    </div>
+                </div>
+                <div class="favorites-stats">
+                    <div class="stats-item">
+                        <span class="stats-label">收藏总数:</span>
+                        <span class="stats-value" id="favoritesCount">0</span>
+                    </div>
+                    <div class="stats-item">
+                        <span class="stats-label">来源文件:</span>
+                        <span class="stats-value" id="favoritesSource">-</span>
+                    </div>
+                </div>
+                <div id="favoritesList" class="questions-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主页面导航 -->
+    <div class="main-navigation">
+        <div class="nav-section">
+            <h3>📚 题库管理</h3>
+            <button class="nav-item-btn" id="viewWrongQuestionsBtn">📝 错题回看</button>
+            <button class="nav-item-btn" id="viewFavoritesBtn">⭐ 收藏题目</button>
+            <button class="nav-item-btn" id="importDataBtn">📥 导入数据</button>
+            <button class="nav-item-btn" id="exportAllDataBtn">💾 导出所有数据</button>
+            <button class="nav-item-btn" id="importNewQuestionsBtn">📁 导入新题库</button>
+            <button class="nav-item-btn" id="clearLocalStorageBtn">🗑️ 清除本地数据</button>
+        </div>
+    </div>
+    
+    <!-- 隐藏的文件输入元素 -->
+    <input type="file" id="dataFileInput" accept=".json" style="display: none;">
+
+    <!-- 版权信息 -->
+    <footer class="copyright">
+        <p>&copy; 2025 智能考试系统. All rights reserved. | 版本 v2.7.0</p>
+        <p>本系统采用 MIT 许可证开源 | 数据本地存储，保护隐私安全</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

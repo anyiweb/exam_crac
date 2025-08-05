@@ -678,7 +678,7 @@ body {
 .nav-btn {
     padding: 10px 20px;
     border: none;
-    border-radius: 20px;
+    border-radius: 10px;
     cursor: pointer;
     font-size: 14px;
     transition: all 0.3s;
